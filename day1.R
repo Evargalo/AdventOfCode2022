@@ -1,11 +1,19 @@
-setwd("C:/Users/mmajr1/Documents/Perso/AdventOfCode/AoC_2022")
-day1A <- read_table("day8A.txt", col_names = FALSE)
-day1A <- read_delim("day8A.txt", col_names = FALSE, delim=' ')
-longtest <- read_delim("day1test.txt", col_names = FALSE, delim=' ')
+# Donnees ----
+read_lines("data1b.txt") %>% paste0(collapse = "") %>% strsplit(',,') %>% unlist ->v
 
-# A
+# A ----
+s<-c()
+for(k in 1:250){
+  vv<-v[k] %>% strsplit(',') %>% unlist %>% as.numeric %>% sum
+  s<-c(s,vv)
+}
+max(s)
 
+# Réponse
+# 69693
 
+# B ----
+s %>% sort %>% tail(3) %>% sum
 
-# B
-
+# Réponse
+# 200945
