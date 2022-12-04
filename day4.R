@@ -5,20 +5,27 @@ d <- read_delim("data4test.txt",col_names = FALSE, delim=',')
 
 
 # A ----
-d %<>% mutate(overlap1=X1<=X3 & X2>=X4,
-              overlap2=X1>=X3 & X2<=X4,
-              overlap=overlap1 | overlap2)
+d %<>% mutate(overlap1= X1<=X3 & X2>=X4, # second range included in the first one
+              overlap2= X1>=X3 & X2<=X4, # first range included in the second one
+              overlap= overlap1 | overlap2)
 
 sum(d$overlap)
 # 556
 
 
 # B ----
-d %<>% mutate(overlap3=X1<=X3 & X3<=X2 & X2<=X4,
-              overlap4=X3<=X1 & X1<=X4 & X4<=X2,
+
+d %>% summarise(sum(X1<=X4 & X3<=X2))
+# 876
+
+
+# B en moins efficace ----
+d %<>% mutate(overlap3= X1<=X3 & X3<=X2 & X2<=X4, # end of first range overlaps the beginning of the second one
+              overlap4= X3<=X1 & X1<=X4 & X4<=X2, # end of second range overlaps the beginning of the first one
               overlap= overlap1 | overlap2 | overlap3 | overlap4)
 sum(d$overlap)
 # 876
+
 
 
 # Trucs inutiles parce que j'ai mal lu l'énoncé... ----
