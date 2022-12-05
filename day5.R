@@ -13,7 +13,7 @@ for(i in 1:9){
 }
 
 # A ----
-applyInstr<-function(X1,X2,X3){
+execInstr<-function(X1,X2,X3){
   if(X1>0){
     giver<-get(paste0("C",X2))
     receiver<-get(paste0("C",X3))
@@ -21,11 +21,11 @@ applyInstr<-function(X1,X2,X3){
     giver<-giver[-1]
     assign(paste0("C",X2),giver, envir = .GlobalEnv)
     assign(paste0("C",X3),receiver, envir = .GlobalEnv)
-    applyInstr(X1-1,X2,X3)
+    execInstr(X1-1,X2,X3)
   }
 }
 
-pmap(d,applyInstr)
+pmap(d,execInstr)
 
 paste0(C1[1],C2[1],C3[1],C4[1],C5[1],C6[1],C7[1],C8[1],C9[1])
 
@@ -41,7 +41,7 @@ for(i in 1:9){
   assign(paste0("C",i),v[v!=" "]) 
 }
 
-applyInstr<-function(X1,X2,X3){
+execInstr<-function(X1,X2,X3){
   if(X1>0){
     giver<-get(paste0("C",X2))
     receiver<-get(paste0("C",X3))
@@ -52,7 +52,7 @@ applyInstr<-function(X1,X2,X3){
   }
 }
 
-pmap(d,applyInstr)
+pmap(d,execInstr)
 
 paste0(C1[1],C2[1],C3[1],C4[1],C5[1],C6[1],C7[1],C8[1],C9[1])
 
