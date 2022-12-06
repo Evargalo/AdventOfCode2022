@@ -1,14 +1,12 @@
 # Donnees ----
 
 d <- read_delim("data5instr.txt",col_names = FALSE, delim=',')
-# d <- read_delim("data5test.txt",col_names = FALSE, delim=',')
-
 
 s <- read_delim("data5.txt",col_names = FALSE, delim='] [')
 s
 s %<>% mutate(X1=substr(X1,2,2), X9=substr(X9,1,1))
 for(i in 1:9){
-  v<-s[,i]%>% unlist %>% unname
+  v<-s[,i] %>% unlist %>% unname
   assign(paste0("C",i),v[v!=" "]) 
 }
 
@@ -56,4 +54,4 @@ pmap(d,execInstr)
 
 paste0(C1[1],C2[1],C3[1],C4[1],C5[1],C6[1],C7[1],C8[1],C9[1])
 
-# 
+# GSLCMFBRP
