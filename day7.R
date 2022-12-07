@@ -4,7 +4,8 @@ d <- read_delim("data7.txt",col_names = FALSE, delim=' ')
 
 # d <- read_delim("data7test.txt",col_names = FALSE, delim=' ')
 
-# Architecture des dossiers et fichier
+# Architecture des dossiers et fichiers
+# NB : en réalité on ne l'utilise pas par la suite, construire juste la liste des dossiers suffirait !
 aTree<-data.frame(parent=character(),child=character())
 # Base des fichiers
 files<-data.frame(size=numeric(),name=character(),folder=character())
@@ -41,14 +42,13 @@ read<-function(X1,X2,X3){
 # Construit l'arbre et la base des fichiers
 pmap(d %>% filter(row_number()>1),read)
 
-# Table des dossiers avec taille initialisée à 0
+# Table des dossiers non vides avec taille initialisée à 0
 folders<-aTree %>% select(f=parent) %>% unique %>% mutate(s=0)
 
-aTree %>% head(20)
 
 # A ----
 
-# Ajoute la taille d'un fichier à celle de tous les dossiers qui le contiennent
+# Ajoute la taille d'un fichier à celle de tous les dossiers qui le contiennent (sauf le dossier racine)
 doFile<-function(size,folder){
   # print(folder)
   if(!folder %in% c("","/")){
@@ -58,7 +58,7 @@ doFile<-function(size,folder){
 }
 # Calcul des tailles de dossiers
 pmap(.l = files %>% select(size,folder),.f = doFile)
-# Ajout du dossier racine
+# Ajout de la taille du dossier racine
 folders<<-folders %>% mutate(s=if_else(f=="/",sum(files$size),s))
 
 folders %>% arrange(desc(s)) %>% head
