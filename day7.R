@@ -10,7 +10,8 @@ aTree<-data.frame(parent=character(),child=character())
 # Base des fichiers
 files<-data.frame(size=numeric(),name=character(),folder=character())
 
-parentFolder<-function(path){ 
+parentFolder<-function(path){
+  if(path=="/") return("")
   path<-substr(path,1,nchar(path)-1)
   path<-paste0(cutAfterLast(path,"/"),"/")
   path
@@ -19,50 +20,50 @@ parentFolder<-function(path){
 pos<-"/"
 # Applique une ligne d'instuction pour complèter l'arbre et la base des fichiers
 read<-function(X1,X2,X3){
-  if(X1=="$"){
+  if(X1=="$"){ # instruction
     if(X2=="cd"){
       if(X3==".."){
         pos<<-parentFolder(pos)
-      } else{
+      }
+      if(X3=="/"){
+        pos<-"/"
+      }
+      if(! X3 %in% c("/","..")){
         pos<<-paste0(pos,X3,"/")
       }
     }
     if(X2=="ls"){ # rien à faire
     }
-  } else{
-    if(X1=="dir"){
-      aTree<<-aTree %>% add_row(parent=pos,child=paste0(pos,X2))
-    } else{
-      files<<-files %>% add_row(size=as.numeric(X1),name=X2,folder=pos)
-      aTree<<-aTree %>% add_row(parent=pos,child=X2)
-    }
+  }
+  if(X1=="dir"){ # subfolder
+    aTree<<-aTree %>% add_row(parent=pos,child=paste0(pos,X2))
+  }
+  if(! X1 %in% c("dir","$")){ # file
+    files<<-files %>% add_row(size=as.numeric(X1),name=X2,folder=pos)
+    aTree<<-aTree %>% add_row(parent=pos,child=X2)
   }
 }
 
 # Construit l'arbre et la base des fichiers
-pmap(d %>% filter(row_number()>1),read)
-
-# Table des dossiers non vides avec taille initialisée à 0
-folders<-aTree %>% select(f=parent) %>% unique %>% mutate(s=0)
+pmap(d,read)
 
 
 # A ----
 
-# Ajoute la taille d'un fichier à celle de tous les dossiers qui le contiennent (sauf le dossier racine)
+# Table des dossiers non vides, avec taille initialisée à 0
+folders<-aTree %>% select(f=parent) %>% unique %>% mutate(s=0)
+
+# Ajoute la taille d'un fichier à celle de tous les dossiers qui le contiennent
 doFile<-function(size,folder){
-  # print(folder)
-  if(!folder %in% c("","/")){
+  if(folder != ""){
     folders<<-folders %>% mutate(s=if_else(f==folder,size+s,s))
     doFile(size,parentFolder(folder))
   }
 }
 # Calcul des tailles de dossiers
 pmap(.l = files %>% select(size,folder),.f = doFile)
-# Ajout de la taille du dossier racine
-folders<<-folders %>% mutate(s=if_else(f=="/",sum(files$size),s))
 
-folders %>% arrange(desc(s)) %>% head
-
+# Somme des tailles des dossiers de taille au plus 100000
 folders %>% filter(s<=100000) %>% summarise(sum(s))
 
 # 1391690
@@ -72,6 +73,7 @@ folders %>% filter(s<=100000) %>% summarise(sum(s))
 
 folders %>% filter(f=="/") %>% pull(s)->occupied
 sizeNeeded<-occupied-40000000
+# taille du plus petit dossier plus grand que sizeNeeded
 folders %>% filter(s>sizeNeeded) %>% filter(s==min(s)) %>% pull(s)
 
 # 5469168
