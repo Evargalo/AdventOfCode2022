@@ -12,13 +12,16 @@ size<-dat %>% ncol
 res<-dat
 res[,]<-1 # arbre visible sauf si caché dans les 4 directions
 
+mat<-res %>% as.logical
 for(i in 2:(size-1)){
   for(j in 2:(size-1)){
-    if(any(dat[1:(i-1),j]>=dat[i,j]) &
-       any(dat[i,1:(j-1)]>=dat[i,j]) &
-       any(dat[(i+1):size,j]>=dat[i,j]) &
-       any(dat[i,(j+1):size]>=dat[i,j])
-       ) res[i,j]<-0
+    val<-dat[i,j] # hauteur de l'arbre
+    mat<-dat>=val # arbres au moins aussi hauts ?
+    if(any(mat[1:(i-1),j]) &
+       any(mat[i,1:(j-1)]) &
+       any(mat[(i+1):size,j]) &
+       any(mat[i,(j+1):size])
+    ) res[i,j]<-0
   }
 }
 
@@ -34,35 +37,36 @@ res[,]<-1 # scenic score
 for(i in 2:(size-1)){
   for(j in 2:(size-1)){
     val<-dat[i,j] # hauteur de l'arbre
+    mat<-dat>=val
     
-    if(all(dat[1:(i-1),j]<val)){
+    if(!any(mat[1:(i-1),j])){
       k<-(i-1)
     } else{
-      w<-which(dat[(i-1):1,j]>=val)
+      w<-which(mat[(i-1):1,j])
       k<-first(w)
     } 
     res[i,j]<-res[i,j]*k
     
-    if(all(dat[size:(i+1),j]<val)){
+    if(!any(mat[size:(i+1),j])){
       k<-(size-i)
     } else{
-      w<-which(dat[(i+1):size,j]>=val)
+      w<-which(mat[(i+1):size,j])
       k<-first(w)
     } 
     res[i,j]<-res[i,j]*k
     
-    if(all(dat[i,1:(j-1)]<val)){
+    if(!any(mat[i,1:(j-1)])){
       k<-(j-1)
     } else{
-      w<-which(dat[i,(j-1):1]>=val)
+      w<-which(mat[i,(j-1):1])
       k<-first(w)
     } 
     res[i,j]<-res[i,j]*k
     
-    if(all(dat[i,size:(j+1)]<val)){
+    if(!any(mat[i,size:(j+1)])){
       k<-(size-j)
     } else{
-      w<-which(dat[i,(j+1):size]>=val)
+      w<-which(mat[i,(j+1):size])
       k<-first(w)
     } 
     res[i,j]<-res[i,j]*k
