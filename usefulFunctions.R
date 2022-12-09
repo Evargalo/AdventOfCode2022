@@ -1,8 +1,11 @@
 options(digits = 20)
 
+# Création opérateur Not in  ----
+'%notin%' <- Negate('%in%')
+
 ############
-# Data
-############
+# Data ----
+
 
 # One character per column in a df
 fileToDF<-function(file) read_lines(file) %>% strsplit('') %>% reduce(rbind)
@@ -14,6 +17,7 @@ df_from_vector_of_strings<-function(v){
 # ex:
 # v<-c("azerty","qsdfgh","wxcvbn")
 # df_from_vector_of_strings(v)
+
 
 ###############
 # Vectors----
@@ -47,10 +51,19 @@ ppcm<-function(a,b){
 cutBefore<- function (text,pattern) sub(pattern=paste0(".*",pattern),"",text)
 cutAfter<- function (text,pattern) sub(pattern=paste0(pattern,".*"),"",text)
 
+cutAfter("a/df/b/jh","/")
+cutBefore("a/df/b/jh","/")
+
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
 rmLastWord<-function(x) sub(pattern = "\\s*\\w*$",x = x,replacement = "")
 rmFirstWord<-function(x) sub(pattern = "^.*?(\\s)",x = x,replacement = "")
+
+cutAfterLast<- function (text,pattern) {
+  gsub(pattern," ",text) %>% rmLastWord->t
+  gsub(" ",pattern,t)
+}
+cutAfterLast("a/df/b/jh","/")
 
 cutString<-function(s,nbParts=10){
   step<-nchar(s)%/%nbParts
@@ -376,6 +389,7 @@ execBootCode<-function(bootCode){
 ###############
 # Permutations----
 # https://www.rdocumentation.org/packages/permutations/versions/1.0-9
+#library(permutations)
 troisPerm<-rperm(3,10)
 as.word(troisPerm)
 as.cycle(troisPerm)
@@ -395,3 +409,4 @@ options(print_word_as_cycle=FALSE)
 f
 as.matrix(as.word(troisPerm))
 ###############
+??rperm

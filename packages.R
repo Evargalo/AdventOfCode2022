@@ -25,6 +25,7 @@ require(Hmisc)
 require(igraph)
 require(modeest)
 require(magrittr)
+require(tidyr)
 
 options(digits=22)
 
