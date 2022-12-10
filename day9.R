@@ -7,7 +7,6 @@ d <- read_delim("data9.txt",col_names = FALSE, delim=' ')
 
 # A ----
 
-
 xH<-0
 xT<-0
 yH<-0  
