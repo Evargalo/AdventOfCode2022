@@ -58,15 +58,17 @@ follow<-function(i){
   yH<-rope[i,2]
   xT<-rope[i+1,1]
   yT<-rope[i+1,2]
-  if(abs(xH-xT)>1 | abs(yH-yT)>1) { # need to move next link ?
+  if(abs(xH-xT)>1 | abs(yH-yT)>1) { # need to move the next link ?
     if(xH!=xT) xT<-xT+sign(xH-xT)
     if(yH!=yT) yT<-yT+sign(yH-yT)
     # save positions
-    if(i==9) trace<<-trace %>% add_row(xT,yT) 
     rope[i,1]<<-xH
     rope[i,2]<<-yH
     rope[i+1,1]<<-xT
     rope[i+1,2]<<- yT
+    if(i==9) {
+      trace<<-trace %>% add_row(xT,yT) # save new tail position
+      } else {follow(i+1)} # next link
   }
 }
 
@@ -84,9 +86,7 @@ move<-function(X1,X2){
     if(X1=="U"){
       rope[1,2]<<-rope[1,2]+1
     }
-    for(i in 1:9){ # the chain follows
-      follow(i)
-    }
+    follow(1) # the chain follows the head
     move(X1,X2-1)  # next move
   }
 }
