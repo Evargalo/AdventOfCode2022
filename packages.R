@@ -11,6 +11,8 @@
 # install.packages("tidyverse")
 # install.packages("gdata")
 # install.packages("vctrs")
+# install.packages('index0')
+require(index0)
 require(vctrs)
 require(tidyverse)
 require(ggformula)
