@@ -3,26 +3,22 @@
 f<- fileToDF("data/data12.txt")
 # f<- fileToDF("data/data12test.txt")
 
-c<-as.matrix(f)
-nrow(c)->nR
-ncol(c)->nC
+f %<>% unname 
 
-m<-matrix(data = numeric(),ncol = nC,nrow = nR)
-for(j in 1:nC){
-  for(i in 1:nR){
-    if(c[i,j]=="E") m[i,j]<-26 else 
-      if(c[i,j]=="S") m[i,j]<-1 else 
-        m[i,j]<-which(letters==c[i,j])
-  }
+lettersToNum<-function(l){
+  if(l=="E") return(26)
+  if(l=="S") return(1)
+  which(letters==l)
 }
 
-df<-expand.grid(i=1:nR,j=1:nC)
-df %<>% rowwise %>% mutate(h=m[i,j],  # elevation
-                           l=c[i,j]   # letter
-                           ) %>% ungroup
-df %>% group_by(h) %>% count
-df %<>% mutate(d=if_else(l=="E",0,-1)) # distance to E, -1 when not calculated
+df<-expand.grid(i=1:nrow(f),j=1:ncol(f))
+df %<>% rowwise %>% mutate(l=f[i,j]) %>% 
+  mutate(h=lettersToNum(l), # elevation
+         d=if_else(l=="E",0,-1) # distance to E, -1 when not calculated) 
+  ) %>% ungroup
 
+df %>% group_by(h) %>% count
+df %>% group_by(d) %>% count
 
 # A ----
 
@@ -31,7 +27,7 @@ dd<-0 # last distance to E having been explored
 # spots from which we can move to ii,jj
 find4Neighbours<-function(ii,jj,hh,dd,ll){
   df %>% filter (
-      (h>=hh-1)   # possible movement
+    (h>=hh-1)   # possible movement
     &
       (d==-1)     # spot not reached earlier
     &
@@ -40,7 +36,7 @@ find4Neighbours<-function(ii,jj,hh,dd,ll){
 }
 # one step further away from E
 walk<-function(dd){
-  toDo<-df %>% filter(d==0) # spots with distance dd, previously calculated
+  toDo<-df %>% filter(d==dd) # spots with distance dd, previously calculated
   nei<-pmap_dfr(toDo,find4Neighbours) # spots with distance dd
   change<-nei %>% nrow # how many spots will be updated
   df<<-nei %>% bind_rows(df) %>% group_by(i,j) %>% filter(row_number()==1) %>% ungroup # replace data for new spots in df
@@ -69,11 +65,33 @@ df %>% filter(h==1 & d!=-1) %>% pull(d) %>% min
 
 # Maps ----
 # elevation map
-gf_tile(df %>% arrange(l %in% c("S","E")),(-j)~i,fill = ~h,
+gf_tile(df %>% arrange(l %in% c("S","E")),(j)~i,fill = ~h,
         color = ~(l %in% c("S","E"))) %>% 
-  gf_refine(scale_color_manual(values = c(alpha("lightblue",0),"red")))
+  gf_refine(scale_color_manual(values = c(alpha("lightblue",0),"red")),
+            theme=theme_void())
 
 # distance map
-gf_tile(df %>% mutate(d=if_else(d==-1,500,d)) %>% arrange(l %in% c("S","E")),
-        (-j)~i,fill = ~d,color = ~(l %in% c("S","E"))) %>% 
-  gf_refine(scale_color_manual(values = c(alpha("lightblue",0),"red")))
+gf_tile(df %>% mutate(d=if_else(d==-1,800,d)) %>% arrange(l %in% c("S","E")),
+        (j)~i,fill = ~d,color = ~(l %in% c("S","E"))) %>% 
+  gf_refine(scale_color_manual(values = c(alpha("lightblue",0),"red")),
+            theme=theme_void())
+
+# path
+path<-df %>% filter(l=="S")
+last<-path
+while(last$d>0){
+  df %>% filter (
+      (h<=last$h+1)   # possible movement
+    &
+      (d==last$d-1)     # closer to goal
+    &
+      (((last$i-i==0) & ((last$j-j) %in% c(-1,1))) | ((last$j-j==0) & ((last$i-i) %in% c(-1,1)))) # neighbour
+  ) %>% head(1) -> last
+  path %<>% add_row(last) 
+}
+
+df %>% bind_rows(path) %>% mutate(onTheWay=duplicated(df%>% bind_rows(path))) %>% unique %>% 
+  gf_tile(gformula=j~i,fill = ~h,color = ~onTheWay) %>% 
+  gf_refine(scale_color_manual(values = c(alpha("lightblue",0),"red")),
+            theme=theme_void())
+ggsave("programs/day12_plot.jpg")
