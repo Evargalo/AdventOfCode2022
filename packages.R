@@ -12,6 +12,8 @@
 # install.packages("gdata")
 # install.packages("vctrs")
 # install.packages('index0')
+# install.packages('gghighlight')
+require(gghighlight)
 require(index0)
 require(vctrs)
 require(tidyverse)

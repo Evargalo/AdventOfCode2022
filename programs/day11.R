@@ -6,7 +6,7 @@ d <- read_delim("data/data11.txt",col_names = FALSE, delim=':')
 d %<>% mutate_all(trim) %>% 
   mutate(X1=rmFirstWord(X1))
 
-# importance and situation of each item
+# worry level and position of each item
 start<-data.frame(value=numeric(),monkey=numeric())
 # rules of monkeys
 monkeys<-data.frame(monkey=numeric(),operator=character(),operande=numeric(),
