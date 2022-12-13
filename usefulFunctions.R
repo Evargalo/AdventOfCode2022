@@ -49,7 +49,7 @@ ppcm<-function(a,b){
 # Strings----
 
 firstChar<-function(s) substr(s,1,1)
-cutFirstChar<-function(s) {
+rmFirstChar<-function(s) {
   if(nchar(s)==0) return("")
   substr(s,2,nchar(s))
 }
