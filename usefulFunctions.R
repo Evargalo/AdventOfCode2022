@@ -48,6 +48,12 @@ ppcm<-function(a,b){
 ###############
 # Strings----
 
+firstChar<-function(s) substr(s,1,1)
+cutFirstChar<-function(s) {
+  if(nchar(s)==0) return("")
+  substr(s,2,nchar(s))
+}
+
 cutBefore<- function (text,pattern) sub(pattern=paste0(".*",pattern),"",text)
 cutAfter<- function (text,pattern) sub(pattern=paste0(pattern,".*"),"",text)
 
