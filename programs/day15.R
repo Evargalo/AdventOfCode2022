@@ -46,8 +46,9 @@ bSup<-4000000
 # Fastest strategy: by collapsing intervals ----
 
 X<-0
+
 while(X < bSup){ # given X, find any possible Y
-  print(X)
+  # print(X) ; 
   #  calculate forbidden intervals for Y 
   d %>% mutate(dX=abs(X-X2), # horizontal distance to the sensor  
                dir=sign(X-X2) # are we getting closer or further from the sensor when X increase ?
@@ -72,14 +73,14 @@ while(X < bSup){ # given X, find any possible Y
   # how far can we jump forward ? Let's see by comparing intervals
   suppressMessages(
     ddd %>% left_join(dd %>% select(fr,to,dir)) %>% mutate(dir=dir*lag(dir)) %>% 
-    filter(dir %in% c(0,1)) %>% # if X is not on the same side of both sensors, the intervals move in different directions and we need to be careful before jumping
+    filter(dir %in% c(0,1)) %>% # if X is not on the same side of both sensors (i.e.dir!=-1), the intervals move in different directions and we need to be careful before jumping
     summarise(min(abs(gap))) %>%
-    unlist %>% unname()->ovl
+    unlist %>% unname()->overlap
     ) # smallest overlap that isn't stable
  
   # jump carefully... 
   move<-min(d1$dX,   # ... not to byPass a sensor
-            ovl%/%2) # ... and to let overlaps vanish
+            overlap%/%2) # ... nor to let any overlap vanish
   X<-X+max(1,move-1)
 }
 
@@ -87,9 +88,21 @@ X*bSup+l
 #13350458933732
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ######################################################################
 
-# First strategy, ~brute force ----
+# First attempt, ~brute force ----
 v<-0:bSup
 rmRange<-function(fr,to){
   v<<-v[v%notin%(fr:to)]
@@ -131,4 +144,5 @@ while(X < bSup){
 }
 X*bSup+v
 
-# Still too slow because at some point we don't have any margin, intervals don't overlap
+# Still too slow because at some point we don't have any margin, some intervals don't overlap
+# In the fastest strategy, we dismiss all overlaps between intervals that move in the same direction

@@ -15,20 +15,13 @@ for(i in 1:length(v)){
   }
 }
 rock %<>% unique
-# 
-# minX1<-min(rock$X1)
-# maxX1<-max(rock$X1)
-# minX2<-min(rock$X2)
-# maxX2<-max(rock$X2)
-# 
-# df<-expand.grid(X1=(minX1-1):(maxX1+1),X2=0:maxX2,t=".")
-# rock %>% mutate(t="#") %>% bind_rows(df) ->temp  
-# temp %>% filter(!duplicated(temp %>% select(X1,X2))) -> df
-# 
-# df %<>% filter(X2>=abs(X1-500))
-# df2<-df %>% filter(t!=".") 
 
-df2<-rock # all obstacles
+minX1<-min(rock$X1)
+maxX1<-max(rock$X1)
+minX2<-min(rock$X2)
+maxX2<-max(rock$X2)
+
+obstacles<-rock # all obstacles
 
 # A ----
 
@@ -36,16 +29,16 @@ sand3<-function(X1S=500,X2S=0,prevX1=500,prevX2=0){
   # if sand is out of bounds it is over 
   if(X2S>=maxX2 | X1S>maxX1 | X1S<minX1) return(list(10000,10000,10000,10000))
   # Obstacles right under sand
-  temp<-df2 %>% filter(X1==X1S,X2>X2S) %>% arrange(X2) %>% first
+  temp<-obstacles %>% filter(X1==X1S,X2>X2S) %>% arrange(X2) %>% first
   # if not obstacle it is over
   if(nrow(temp)==0) return(list(10000,10000,10000,10000))
   # If the first obstacle is far sand reaches the spot just above it
   if(temp$X2>X2S+1) return(sand3(X1S,temp$X2-1,X1S,temp$X2-2))
   # Otherwise an obstacle is just below 
   # Sand tries to go left
-  if(df2 %>% summarise(sum(X1==X1S-1 & X2==X2S+1))==0) return (sand3(X1S-1,X2S+1,X1S,X2S)) 
+  if(obstacles %>% summarise(sum(X1==X1S-1 & X2==X2S+1))==0) return (sand3(X1S-1,X2S+1,X1S,X2S)) 
   # Sand tries to go right
-  if(df2 %>% summarise(sum(X1==X1S+1 & X2==X2S+1))==0) return (sand3(X1S+1,X2S+1,X1S,X2S)) 
+  if(obstacles %>% summarise(sum(X1==X1S+1 & X2==X2S+1))==0) return (sand3(X1S+1,X2S+1,X1S,X2S)) 
   # If nothing has worked sand stays on spot
   return(list(X1S,X2S,prevX1,prevX2))
 }
@@ -58,13 +51,13 @@ while(!stop){
   if(s[[1]]==10000 & s[[2]]==10000){ # sand falls out of bounds, it is over
     stop<-TRUE
   } else{
-    df2 %<>% add_row(X1=s[[1]],X2=s[[2]]) # new obstacle found
+    obstacles %<>% add_row(X1=s[[1]],X2=s[[2]]) # new obstacle found
     # To save time, next step will start from the penultimate position
     X1<-s[[3]]
     X2<-s[[4]]
   }
 }
-nrow(df2)-nrow(rock) # number of obstacles that are not a rock
+nrow(obstacles)-nrow(rock) # number of obstacles that are not a rock
 # 1199
 
 
@@ -99,28 +92,28 @@ sum(m=="o")
 # 23925
 
 # Visualization
-df2 %<>% mutate(t=if_else(row_number()<=nrow(rock),"#","o"))
-gf_tile(object = df2,gformula = (-X2)~X1,fill = ~t) %>% 
+obstacles %<>% mutate(t=if_else(row_number()<=nrow(rock),"#","o"))
+gf_tile(object = obstacles,gformula = (-X2)~X1,fill = ~t) %>% 
   gf_refine(theme=theme_void())
 
 
 # B Old version like in A: works fine for test, quite slow for real data ----
 
-df2<-rock %>% mutate(t="#") # type of obstacle, added for graph
+obstacles<-rock %>% mutate(t="#") # type of obstacle, added for graph
 
 sand3<-function(X1S=500,X2S=0,prevX1=500,prevX2=0){
   # At floor level sand can't go further
   if(X2S+1==bottom) return(list(X1S,X2S,prevX1,prevX2))
   # Obstacles right under sand
-  temp<-df2 %>% filter(X1==X1S,X2>X2S) %>% arrange(X2) %>% first
+  temp<-obstacles %>% filter(X1==X1S,X2>X2S) %>% arrange(X2) %>% first
   # No obstacle: sand reaches the floor
   if(nrow(temp)==0) return(list(X1S,bottom-1,X1S,X2S))
   # Obstacle far below: sand arrives above the obstacle
   if(temp$X2>X2S+1) return(sand3(X1S,temp$X2-1,X1S,temp$X2-2))
   # No obstacle on the left : sand goes there
-  if(df2 %>% summarise(sum(X1==X1S-1 & X2==X2S+1))==0) return (sand3(X1S-1,X2S+1,X1S,X2S)) 
+  if(obstacles %>% summarise(sum(X1==X1S-1 & X2==X2S+1))==0) return (sand3(X1S-1,X2S+1,X1S,X2S)) 
   # No obstacle on the right : sand goes there
-  if(df2 %>% summarise(sum(X1==X1S+1 & X2==X2S+1))==0) return (sand3(X1S+1,X2S+1,X1S,X2S))
+  if(obstacles %>% summarise(sum(X1==X1S+1 & X2==X2S+1))==0) return (sand3(X1S+1,X2S+1,X1S,X2S))
   # Otherwise sand can't go anywhere anymore, it lays there.
   # print(X1S); print(X2S)
   return(list(X1S,X2S,prevX1,prevX2))
@@ -133,18 +126,18 @@ X2<-0
 while(!stop){
   s<-sand3(X1,X2)
   if(s[[1]]==500 & s[[2]]==0){stop<-TRUE} # We stop if some sand stays on (500,0)
-  df2 %<>% add_row(X1=s[[1]],X2=s[[2]],t="o") # A new spot is occupied by sand
+  obstacles %<>% add_row(X1=s[[1]],X2=s[[2]],t="o") # A new spot is occupied by sand
   nbSand<-nbSand+1
-  if(nbSand%%1000==0){print(nbSand);assign(paste0("df2_",nbSand),df2)}
+  if(nbSand%%1000==0){print(nbSand);assign(paste0("obstacles_",nbSand),obstacles)}
   # To save time, next step will start from the penultimate position
   X1<-s[[3]]
   X2<-s[[4]]
 }
 
-df2 %>% unique %>% group_by(t) %>% count()
+obstacles %>% unique %>% group_by(t) %>% count()
 nbSand
 # Works for test, slow for real data
 
 # Still a nice graph though
-gf_tile(object = df2,gformula = (-X2)~X1,fill = ~t)
+gf_tile(object = obstacles,gformula = (-X2)~X1,fill = ~t)
 
