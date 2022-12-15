@@ -28,10 +28,10 @@ compareItems<-function(s1,s2){ # 1: bien rangées, s1<s2 / -1: mal rangées, s1>
   if(c1=="]") return(1)
   return(-compareItems(s2,s1)) 
 }
-pmap(d %>% select(s1=X1,s2=X2),compareItems) %>% unlist->res
+d %<>% rowwise %>% mutate(r=compareItems(X1,X2)) %>% ungroup
 
 # Nombre de paires bien rangées
-sum(which(res==1))
+sum(which(d$r==1))
 # 5252
 
 # B ----
