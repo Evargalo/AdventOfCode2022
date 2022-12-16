@@ -34,7 +34,7 @@ find4Neighbours<-function(ii,jj,hh,dd,ll){
       (((ii-i==0) & ((jj-j) %in% c(-1,1))) | ((jj-j==0) & ((ii-i) %in% c(-1,1))))
   ) %>% mutate(d=dd+1)    # close enough
 }
-# one step further away from E
+# one step further away from E (BFS, ~Dijkstra)
 walk<-function(dd){
   toDo<-df %>% filter(d==dd) # spots with distance dd, previously calculated
   nei<-pmap_dfr(toDo,find4Neighbours) # spots with distance dd
@@ -43,7 +43,7 @@ walk<-function(dd){
   change
 }
 
-# map the area
+# map the area 
 stop<-FALSE
 while(!stop){
   if(dd%%20==0) {print(dd);print(df %>% filter(d==-1) %>% nrow)}
@@ -95,3 +95,28 @@ df %>% bind_rows(path) %>% mutate(onTheWay=duplicated(df%>% bind_rows(path))) %>
   gf_refine(scale_color_manual(values = c(alpha("lightblue",0),"red")),
             theme=theme_void())
 ggsave("programs/day12_plot.jpg")
+
+
+
+##########################
+# 3D graphics attempt ----
+
+install.packages("plotly")
+install.packages("devtools")
+install.packages("htmlwidgets")
+library(devtools)
+devtools::install_version("plotly", version = "4.5.6", 
+                          repos = "http://cran.us.r-project.org")
+library(plotly)
+
+p<-plot_ly(x=df$i, y=df$j, z=df$h, type="surface")
+
+library(htmlwidgets)
+
+saveWidget(p, "p.html", selfcontained = F, libdir = "lib")
+
+zip("p.zip", c("p.html", "lib"))
+
+
+
+df %>% bind_rows(path) %>% mutate(onTheWay=duplicated(df%>% bind_rows(path))) %>% unique %>% plot_ly(x=i, y=j, z=h, type="surface", mode="markers",fill=d, color=onTheWay)
