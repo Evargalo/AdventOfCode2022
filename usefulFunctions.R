@@ -1,4 +1,4 @@
-options(digits = 20)
+options(digits = 22)
 
 # Création opérateur Not in  ----
 '%notin%' <- Negate('%in%')
