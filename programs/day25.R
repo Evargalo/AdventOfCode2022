@@ -39,7 +39,7 @@ DecTo5(tot)
 
 # Conversion by algorithm :
 FivetoSNAFU<-function(x){
-  print(x)
+  # print(x)
   if(x==0) return("")
   rest<-x%/%10
   digit<-x%%10
